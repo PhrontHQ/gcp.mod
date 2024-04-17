@@ -1,2 +1,2 @@
 # gcp-mod
-Mod to build and deploy apps running on Google Cloud Platform
+Mod allowing to build live-apps using Google Cloud Platform
