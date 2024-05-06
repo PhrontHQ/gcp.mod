@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "# If you use npm to generate or modify this file, make sure",
+    "# to restore the file's 4 space indents after the generation",
+    "# or modification so it matches other source files in the",
+    "# project. npm only generates files with 2 space indents",
+    "# (see https://github.com/npm/npm/pull/3180#issuecomment-16336516)."
+  ],
+  "name": "gcp.mod",
+  "version": "1.0.0",
+  "private": false,
+  "license": "BSD-3-Clause",
+  "main": "",
+  "author": "Phront. (https://phront.com/)",
+  "repository": {
+    "type": "git",
+    "url": "PhrontHQ/gcp.mod#main"
+  },
+  "dependencies": {
+    "mod": "github:PhrontHQ/mod#main",
+    "app-infrastructure-data.mod": "github:PhrontHQ/app-infrastructure-data.mod#main",
+    "@google-cloud/secret-manager": "^5.5.0"
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+  }
+}
