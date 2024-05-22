@@ -1,4 +1,5 @@
 const RawDataService = require("mod/data/service/raw-data-service").RawDataService,
+    Montage = require('mod/core/core').Montage,
     //SyntaxInOrderIterator = (require)("mod/core/frb/syntax-iterator").SyntaxInOrderIterator,
     DataOperation = require("mod/data/service/data-operation").DataOperation;
 var SecretManagerServiceClient;
@@ -10,6 +11,16 @@ var SecretManagerServiceClient;
         https://cloud.google.com/nodejs/docs/reference/secret-manager/latest
         https://github.com/googleapis/google-cloud-node/blob/main/packages/google-cloud-secretmanager/package.json
         https://www.npmjs.com/package/@google-cloud/secret-manager
+    */
+
+    /*
+        Set up Application Default Credentials
+        https://cloud.google.com/docs/authentication/provide-credentials-adc
+    */
+
+    /*
+        Quickstart
+        https://cloud.google.com/secret-manager/docs/samples/secretmanager-quickstart?hl=en
     */
 
 
@@ -40,7 +51,7 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
         //secretObjectDescriptor.addEventListener(DataOperation.Type.ReadOperation,this,false);
         var self = this;
         this._childServiceTypes.addRangeChangeListener(function (plus, minus) {
-            for(var i=0, countI = plus.length, iObjectDescriptor; (i < countI); i++) {
+            for (var i=0, countI = plus.length, iObjectDescriptor; (i < countI); i++) {
                 iObjectDescriptor = plus[i];
                 if(iObjectDescriptor.name === "Secret") {
                     iObjectDescriptor.addEventListener(DataOperation.Type.ReadOperation,self,false);
@@ -62,14 +73,13 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
 
     /*
         https://cloud.google.com/docs/authentication/client-libraries
-
     */
     instantiateRawClientWithOptions(rawClientOptions) {
         return new SecretManagerServiceClient(rawClientOptions/*??*/);
     }
 
-    rawClientPromises() {
-        var promises = super();
+    get rawClientPromises() {
+        var promises = super.rawClientPromises;
 
         /*
             This lazy load allows to reduce cold-start time, but to kick-start load of code in the phase that's not billed, at least on AWS
@@ -77,8 +87,11 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
 
         promises.push(
             // require.async("@aws-sdk/client-secrets-manager/dist-cjs/SecretsManagerClient").then(function(exports) { SecretsManagerClient = exports.SecretsManagerClient})
-            require.async("@google-cloud/secret-manager").then(function(exports) {
+            require.async("@google-cloud/secret-manager").then((exports) => {
                 SecretManagerServiceClient = exports.v1.SecretManagerServiceClient;
+                this._rawClient = new SecretManagerServiceClient();
+                return this._rawClient;
+
                 // GetSecretValueCommand = exports.GetSecretValueCommand;
             })
         );
@@ -185,6 +198,10 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
                             resolve(rawData);
                         }
                     });
+                })
+                .catch(function(error) {
+                    console.error("rawClientPromise catch():",error);
+                    return null;
                 });
 
             }));
