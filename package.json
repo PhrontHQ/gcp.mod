@@ -19,7 +19,7 @@
   "dependencies": {
     "mod": "github:PhrontHQ/mod#main",
     "app-infrastructure-data.mod": "github:PhrontHQ/app-infrastructure-data.mod#main",
-    "@google-cloud/secret-manager": "^5.5.0"
+    "@google-cloud/secret-manager": "^5.6.0"
   },
   "devDependencies": {
   },
