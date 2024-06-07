@@ -1,7 +1,12 @@
 const RawDataService = require("mod/data/service/raw-data-service").RawDataService,
     Montage = require('mod/core/core').Montage,
     //SyntaxInOrderIterator = (require)("mod/core/frb/syntax-iterator").SyntaxInOrderIterator,
-    DataOperation = require("mod/data/service/data-operation").DataOperation;
+    DataOperation = require("mod/data/service/data-operation").DataOperation,
+    os = require('os'),
+    path = require('path'),
+    homeDirectory = os.homedir();
+    
+
 var SecretManagerServiceClient;
 
     //Causes issues
@@ -89,7 +94,9 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
             // require.async("@aws-sdk/client-secrets-manager/dist-cjs/SecretsManagerClient").then(function(exports) { SecretsManagerClient = exports.SecretsManagerClient})
             require.async("@google-cloud/secret-manager").then((exports) => {
                 SecretManagerServiceClient = exports.v1.SecretManagerServiceClient;
-                this._rawClient = new SecretManagerServiceClient();
+                this._rawClient = new SecretManagerServiceClient( {
+                    keyFilename: this.connectionDescriptor[this.currentEnvironment.stage].credentialsFilePath.replace("~", homeDirectory)
+                });
                 return this._rawClient;
 
                 // GetSecretValueCommand = exports.GetSecretValueCommand;
@@ -139,69 +146,51 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
             (promises || (promises = [])).push(new Promise(function(resolve, reject) {
 
                 self.rawClientPromise.then(() => {
+                    // console.debug("GCP SecretManagerDataService fetch secret "+secretId);
+                    var secretStore = self.connectionDescriptor[self.currentEnvironment.stage].secretStore,
+                        secretName = secretStore.stringByAppendingPathComponent(secretId)+ "/versions/latest";
 
-                    const getSecretValueCommand = new GetSecretValueCommand({
-                        SecretId: secretId
-                    });
-                    self.rawClient.send(getSecretValueCommand, function (err, data) {
-                        if (err) {
-                            /*
-
-                                if (err.code === 'DecryptionFailureException')
-                                    // Secrets Manager can't decrypt the protected secret text using the provided KMS key.
-                                    // Deal with the exception here, and/or rethrow at your discretion.
-                                    reject(err);
-                                else if (err.code === 'InternalServiceErrorException')
-                                    // An error occurred on the server side.
-                                    // Deal with the exception here, and/or rethrow at your discretion.
-                                    reject(err);
-                                else if (err.code === 'InvalidParameterException')
-                                    // You provided an invalid value for a parameter.
-                                    // Deal with the exception here, and/or rethrow at your discretion.
-                                    reject(err);
-                                else if (err.code === 'InvalidRequestException')
-                                    // You provided a parameter value that is not valid for the current state of the resource.
-                                    // Deal with the exception here, and/or rethrow at your discretion.
-                                    reject(err);
-                                else if (err.code === 'ResourceNotFoundException')
-                                    // We can't find the resource that you asked for.
-                                    // Deal with the exception here, and/or rethrow at your discretion.
-                                    reject(err);
-
-                            */
-                            console.log(err, err.stack); // an error occurred
-                            (rawData || (rawData = {}))[data] = err;
-                            reject(err);
-                        }
-                        else {
-                            var secret, secretValue;
-                            // Decrypts secret using the associated KMS CMK.
-                            // Depending on whether the secret is a string or binary, one of these fields will be populated.
-                            if ('SecretString' in data) {
-                                secret = data.SecretString;
-                                // console.log("secret:",secret);
-                            } else {
-                                let buff = new Buffer(data.SecretBinary, 'base64');
-                                secret = decodedBinarySecret = buff.toString('ascii');
-                                //console.log("decodedBinarySecret:",decodedBinarySecret);
-                            }
-
-                            try {
-                                secretValue = JSON.parse(secret);
-                            } catch(parseError) {
-                                //It's not jSON...
-                                secretValue = secret;
-                            }
-                            (rawData || (rawData = {}))["name"] = data.Name;
-                            (rawData || (rawData = {}))["value"] = secretValue;
-
-                            resolve(rawData);
-                        }
-                    });
+                    return self.rawClient.accessSecretVersion({
+                        name: secretName
+                      });
                 })
-                .catch(function(error) {
-                    console.error("rawClientPromise catch():",error);
-                    return null;
+                .then((response) => {
+                    
+                    // console.debug("GCP SecretManagerDataService fetch secret "+secretId+" complete: ",secretValue);
+
+                      try {
+                          // Extract the payload as a string.
+                        const [version] = response,
+                            secretStringValue = version.payload.data.toString();
+
+
+                        try {
+                            var secretValue = JSON.parse(secretStringValue);
+                        } catch(parseError) {
+                            //It's not jSON...
+                            secretValue = secretStringValue;
+                        }
+
+                        (rawData || (rawData = {}))["name"] = secretId;
+                        (rawData || (rawData = {}))["value"] = secretValue;
+
+                        resolve(rawData);
+
+
+                      } catch (err) {
+                        console.log(err, err.stack); // an error occurred
+                        (rawData || (rawData = {}))[data] = err;
+                        reject(err);
+
+                      }
+
+                })
+                .catch((error)=> {
+                    if(error.details.includes("invalid_grant") && self.currentEnvironment.isLocalModding) {
+                        console.warn("Error: User Re-Authentication needed. Run in terminal: \n\ngcloud auth application-default login\n\n", error);
+                    } else {
+                        return Promise.reject(error);
+                    }
                 });
 
             }));
