@@ -10,7 +10,7 @@ const RawDataService = require("mod/data/service/raw-data-service").RawDataServi
 var SecretManagerServiceClient;
 
     //Causes issues
-    // secretObjectDescriptor = (require) ("app-infrastructure-data-mod/data/main.mod/model/secret.mjson").montageObject;
+    // secretObjectDescriptor = (require) ("mod/data/main.mod/model/secret.mjson").montageObject;
 
     /*
         https://cloud.google.com/nodejs/docs/reference/secret-manager/latest
