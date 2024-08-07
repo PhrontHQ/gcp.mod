@@ -186,7 +186,7 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
 
                 })
                 .catch((error)=> {
-                    if(error.details.includes("invalid_grant") && self.currentEnvironment.isLocalModding) {
+                    if(self.currentEnvironment.isLocalModding && error?.details.includes("invalid_grant")) {
                         console.warn("Error: User Re-Authentication needed. Run in terminal: \n\ngcloud auth application-default login\n\n", error);
                     } else {
                         return Promise.reject(error);
