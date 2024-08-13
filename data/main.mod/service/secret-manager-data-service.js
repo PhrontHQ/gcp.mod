@@ -46,24 +46,6 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
     constructor() {
         super();
 
-        //var mainService = DataService.mainService;
-        //this.addEventListener(DataOperation.Type.ReadOperation,this,false);
-        /*
-            There's somethig fragile that needs to be solved here. If we listen on this, expecting that an event whose target is secretObjectDescriptorm, which we manage, is going to bubble to us. The problem is that it bubbles from Secret to DataObject first, but DataObject isn't handled by SecretManagerDataService, and so it bubbles through something else that manages directly DataObject. So that logic has to be adapted.
-
-            There's also a dependency graph issue if we require secretObjectDescriptor directly, leaving it commmented above to remind of it.
-        */
-        //secretObjectDescriptor.addEventListener(DataOperation.Type.ReadOperation,this,false);
-        var self = this;
-        this._childServiceTypes.addRangeChangeListener(function (plus, minus) {
-            for (var i=0, countI = plus.length, iObjectDescriptor; (i < countI); i++) {
-                iObjectDescriptor = plus[i];
-                if(iObjectDescriptor.name === "Secret") {
-                    iObjectDescriptor.addEventListener(DataOperation.Type.ReadOperation,self,false);
-                }
-            }
-        });
-
         return this;
     }
 
