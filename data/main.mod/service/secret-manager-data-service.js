@@ -169,10 +169,11 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
                 })
                 .catch((error)=> {
                     if(self.currentEnvironment.isLocalModding && error.details?.includes("invalid_grant")) {
-                        console.warn("Error: User Re-Authentication needed. Run in terminal: \n\ngcloud auth application-default login\n\n", error);
-                    } else {
-                        return Promise.reject(error);
-                    }
+                        console.warn("Error: GCP User Re-Authentication needed. Run in terminal: \n\ngcloud auth application-default login\n\n", error);
+                        
+                    } 
+                    operation = self.responseOperationForReadOperation(readOperation, error, null, false/*isNotLast*/);
+                    objectDescriptor.dispatchEvent(operation);
                 });
 
             }));
