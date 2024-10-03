@@ -73,15 +73,10 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
         */
 
         promises.push(
-            // require.async("@aws-sdk/client-secrets-manager/dist-cjs/SecretsManagerClient").then(function(exports) { SecretsManagerClient = exports.SecretsManagerClient})
             require.async("@google-cloud/secret-manager").then((exports) => {
                 SecretManagerServiceClient = exports.v1.SecretManagerServiceClient;
-                this._rawClient = new SecretManagerServiceClient( {
-                    keyFilename: this.connectionDescriptor[this.currentEnvironment.stage].credentialsFilePath.replace("~", homeDirectory)
-                });
+                this._rawClient = new SecretManagerServiceClient();
                 return this._rawClient;
-
-                // GetSecretValueCommand = exports.GetSecretValueCommand;
             })
         );
 
