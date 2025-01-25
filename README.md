@@ -1,5 +1,5 @@
 # gcp-mod
-Mod allowing to build live-apps using Google Cloud Platform
+Mods to build and deploy mods on Google Cloud Platform
 
 TODO: Solve the manual login needed all the time with:
 
