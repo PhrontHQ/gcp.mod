@@ -17,7 +17,7 @@
     "url": "PhrontHQ/gcp.mod#main"
   },
   "dependencies": {
-    "mod": "github:PhrontHQ/mod#bugfix/data-6-25",
+    "mod": "github:PhrontHQ/mod#main",
     "@google-cloud/secret-manager": "^5.6.0"
   },
   "devDependencies": {
