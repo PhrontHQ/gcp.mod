@@ -75,11 +75,14 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
         promises.push(
             require.async("@google-cloud/secret-manager").then((exports) => {
                 SecretManagerServiceClient = exports.v1.SecretManagerServiceClient;
-                // this._rawClient = new SecretManagerServiceClient();
-
-                this._rawClient = new SecretManagerServiceClient({
-                    keyFilename: this.connectionDescriptor[this.currentEnvironment.stage].credentialsFilePath.replace("~", homeDirectory)
-                });
+                /*
+                    The following commented block is an alternative to solve a problem on some people's local congig 
+                    that shouldn't be committed as it doesn't work when deployed on GCP
+                */
+                // this._rawClient = new SecretManagerServiceClient({
+                //     keyFilename: this.connectionDescriptor[this.currentEnvironment.stage].credentialsFilePath.replace("~", homeDirectory)
+                // });
+                this._rawClient = new SecretManagerServiceClient();
                 return this._rawClient;
             })
         );
