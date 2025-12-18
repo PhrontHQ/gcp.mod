@@ -130,7 +130,7 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
             (promises || (promises = [])).push(new Promise(function(resolve, reject) {
 
                 self.rawClientPromise.then(() => {
-                    // console.debug("GCP SecretManagerDataService fetch secret "+secretId);
+                    console.debug("GCP SecretManagerDataService fetch secret "+secretId);
                     var secretStore = self.connectionDescriptor[self.currentEnvironment.stage].secretStore,
                         secretName = secretStore.stringByAppendingPathComponent(secretId)+ "/versions/latest";
 
@@ -140,7 +140,7 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
                 })
                 .then((response) => {
                     
-                    // console.debug("GCP SecretManagerDataService fetch secret "+secretId+" complete: ",secretValue);
+                    console.debug("GCP SecretManagerDataService fetch secret "+secretId+" complete: ");
 
                       try {
                           // Extract the payload as a string.
@@ -172,8 +172,10 @@ exports.SecretManagerDataService = class SecretManagerDataService extends RawDat
                 .catch((error)=> {
                     if(self.currentEnvironment.isLocalModding && error.details?.includes("invalid_grant")) {
                         console.warn("Error: GCP User Re-Authentication needed. Run in terminal: \n\n\tgcloud auth application-default login\n\n", error);
-                        
-                    } 
+                    } else {
+                    console.debug("GCP SecretManagerDataService fetch secret "+secretId+" failed with error:", error);
+
+                    }
                     operation = self.responseOperationForReadOperation(readOperation, error, null, false/*isNotLast*/);
                     objectDescriptor.dispatchEvent(operation);
                 });
